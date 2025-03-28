@@ -138,7 +138,7 @@ and Age >= 40
 ---võtab kolm esimest rida
 select top 3 * from Person
 
---- ?
+---shows lines with the oldest people
 select * from Person
 select top 3 Age, Name from Person
 
