@@ -213,7 +213,7 @@ values (10, 'Russell', 'Male', 8800, NULL)
 
 select * from Employees
 
----?
+---Adds salary as numbers
 select distinct Name, DepartmentId from Employees
 
 ---?
