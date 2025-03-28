@@ -104,7 +104,7 @@ select * from Person
 alter table Person
 add City nvarchar(25)
 
--- ?
+-- selecting only line where city is Gotham
 select * from Person where City = 'Gotham'
 
 
