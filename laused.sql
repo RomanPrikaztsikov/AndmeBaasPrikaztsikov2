@@ -131,7 +131,7 @@ select * from Person where Email like '_@_.com'
 
 --shows names that dont start with w,a,s
 select * from Person where Name like '[^WAS]%'
---- ?
+---shows lines where city is Gotham or New York and the age is 40 or more
 select * from Person where (City = 'Gotham' or City = 'New York')
 and Age >= 40
 
