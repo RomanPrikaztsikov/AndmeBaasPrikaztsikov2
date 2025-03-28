@@ -213,12 +213,12 @@ values (10, 'Russell', 'Male', 8800, NULL)
 
 select * from Employees
 
----Adds salary as numbers
+--Shows unique names and departments
 select distinct Name, DepartmentId from Employees
 
----Finds the lowest salary number
+---Adds salary as numbers
 select sum(cast(Salary as int)) from Employees
----?
+---Finds the lowest salary number
 select min(cast(Salary as int)) from Employees
 
 
