@@ -216,7 +216,7 @@ select * from Employees
 ---Adds salary as numbers
 select distinct Name, DepartmentId from Employees
 
----?
+---Finds the lowest salary number
 select sum(cast(Salary as int)) from Employees
 ---?
 select min(cast(Salary as int)) from Employees
