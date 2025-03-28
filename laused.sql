@@ -19,6 +19,7 @@ Id int NOT NULL primary key,
 Gender nvarchar(10) not null
 )
 
+--tabeli Person loomine
 create table Person
 (
 Id int not null primary key,
@@ -26,6 +27,7 @@ Name nvarchar(25),
 Email nvarchar(30),
 GenderId int
 )
+
 
 --- andmete sisestamine tabelisse
 insert into Gender (Id, Gender)
