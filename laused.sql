@@ -151,7 +151,7 @@ select * from Person order by Age
 --Adds Age as numbers
 select sum(cast(Age as int)) from Person
 
---?
+--Finds the smallest Age
 select min(cast(Age as int)) from Person
 
 --?
