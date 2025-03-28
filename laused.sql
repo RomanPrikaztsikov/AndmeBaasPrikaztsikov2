@@ -58,7 +58,7 @@ values (7, 'Spiderman', 'spider@spiderman.com', 2)
 -- vaatame tabeli andmeid
 select * from Person
 
---- ?
+--- removing Foreign Key from the table Person
 alter table Person
 drop constraint tblPerson_GenderId_FK
 
