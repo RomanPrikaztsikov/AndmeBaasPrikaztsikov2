@@ -154,7 +154,7 @@ select sum(cast(Age as int)) from Person
 --Finds the smallest Age
 select min(cast(Age as int)) from Person
 
---?
+--Finds the biggest Age
 select max(cast(Age as int)) from Person
 
 select City, sum(cast(Age as int)) as TotalAge from Person group by City
@@ -178,7 +178,7 @@ Salary nvarchar(50),
 DepartmentId int
 )
 
---?
+--Shows unique names and departments
 insert into Department (Id, DepartmentName, Location, DepartmentHead)
 values (1, 'IT', 'London', 'Rick')
 insert into Department (Id, DepartmentName, Location, DepartmentHead)
