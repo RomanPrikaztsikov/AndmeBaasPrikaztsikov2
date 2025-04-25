@@ -28,7 +28,8 @@ values ('Ben', 'B@B.com'),
 select * from IndianCustomers
 select * from UKCustomers
 
--- kasutame union all, näitab kõiki ridu
+--kasutame union all, näitab kõiki ridu
+--näitab kõik ridu, kui veerunimed on samad
 select Id, Name, Email from IndianCustomers
 union all
 select Id, Name, Email from UKCustomers
@@ -45,23 +46,74 @@ select Id, Name, Email from UKCustomers
 order by Name
 
 --- stored procedure
-create procedure spGetEmployees
+create procedure spGetCustomers
 as begin
-	select FirstName, Gender from Employees
+	select Name, Email from UKCustomers
 end
+drop procedure spgetCustomers
 
 -- nüüd saab kasutada selle nimelist sp-d
-spGetEmployees
-exec spGetEmployees
-execute spGetEmployees
+spGetCustomers
+exec spGetCustomers
+execute spGetCustomers
+
+--loome tabeli employees
+create table Employees
+(
+Id int primary key,
+Name nvarchar(50),
+Gender nvarchar(10),
+Salary nvarchar(50),
+DepartmentId int
+)
+
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (1, 'Tom', 'Male', 4000, 1)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (2, 'Pam', 'Female', 3000, 1)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (3, 'John', 'Male', 3500, 1)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (4, 'Sam', 'Male', 4500, 2)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (5, 'Todd', 'Male', 2800, 1)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (6, 'Ben', 'Male', 7000, 1)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (7, 'Sara', 'Female', 4800, 3)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (8, 'Valarie', 'Female', 5500, 1)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (9, 'James', 'Male', 6500, NULL)
+insert into Employees (Id, Name, Gender, Salary, DepartmentId)
+values (10, 'Russell', 'Male', 8800, NULL)
+
+create table Department
+(
+Id int primary key,
+DepartmentName nvarchar(50),
+Location nvarchar(50),
+DepartmentHead nvarchar(50)
+)
+
+insert into Department (Id, DepartmentName, Location, DepartmentHead)
+values (1, 'IT', 'London', 'Rick')
+insert into Department (Id, DepartmentName, Location, DepartmentHead)
+values (2, 'Payroll', 'Delhi', 'Ron')
+insert into Department (Id, DepartmentName, Location, DepartmentHead)
+values (3, 'HR', 'New York', 'Christie')
+insert into Department (Id, DepartmentName, Location, DepartmentHead)
+values (4, 'Other Deparment', 'Sydney', 'Cindrella')
 
 select * from Employees
+select * from Department
 
+--näitab tabelisisu, kui kasutaja sisestab gender(sugu) ja departmentId
 create proc spGetEmployeesByGenderAndDepartment
 @Gender nvarchar(20),
 @DepartmentId int
 as begin
-	select FirstName, Gender, DepartmentId from Employees where Gender = @Gender
+	select Name, Gender, DepartmentId from Employees where Gender = @Gender
 	and DepartmentId = @DepartmentId
 end
 
@@ -76,7 +128,6 @@ spGetEmployeesByGenderAndDepartment @DepartmentId = 1, @Gender = 'Male'
 -- soov vaadata sp sisu
 sp_helptext spGetEmployeesByGenderAndDepartment
 
---- 5tund 17.03.2025
 
 --- kuidas muuta sp-d ja pane krüpteeringu peale, et keegi teine peale teid ei saaks muuta
 alter proc spGetEmployeesByGenderAndDepartment
@@ -91,24 +142,28 @@ end
 sp_helptext spGetEmployeesByGenderAndDepartment
 
 -- sp tegemine
+--loeb inimeste arv vastavalt sisestatud gender
 create proc spGetEmployeeCountByGender
 @Gender nvarchar(20),
 @EmployeeCount int output
 as begin
 	select @EmployeeCount = count(Id) from Employees where Gender = @Gender
 end
+exec spGetEmployeeCountByGender 'Male'
+
 
 -- annab tulemuse, kus loendab ära nõuetele vastavad read
 -- prindib tulemuse konsooli
+--käivitame spGetEmployeeCountByGender 'Male'
 declare @TotalCount int
-execute spGetEmployeeCountByGender 'Female', @TotalCount out
+execute spGetEmployeeCountByGender 'Male', @TotalCount out
 if(@TotalCount = 0)
 	print 'TotalCount is null'
 else
 	print '@Total is not null'
 print @TotalCount
 
--- näitab ära, et mitu rid vastab nõuetele
+-- näitab ära, et mitu ridu vastab nõuetele
 declare @TotalCount int
 execute spGetEmployeeCountByGender @EmployeeCount = @TotalCount out, @Gender = 'Male'
 print @TotalCount
@@ -126,12 +181,13 @@ sp_depends spGetEmployeeCountByGender
 sp_depends Employees
 
 
---
+--proceduur mis ei tööta korrektselt, tulemuses annab üks ja sama nimi
+--peame lisama where...
 create proc spGetnameById
 @Id int,
 @Name nvarchar(20) output
 as begin
-	select @Id = Id, @Name = FirstName from Employees
+	select @Id = Id, @Name = Name from Employees
 end
 
 select * from Employees
@@ -139,14 +195,14 @@ declare @FirstName nvarchar(50)
 execute spGetnameById 2, @FirstName output
 print 'Name of the employee = ' + @FirstName
 
--- mis id all on keegi nime j'rgi
+--näitab nimi sisestatud id järgi
 create proc spGetNameById1
 @Id int,
 @FirstName nvarchar(50) output
 as begin
-	select @FirstName = FirstName from Employees where Id = @Id
+	select @FirstName = Name from Employees where Id = @Id
 end
-
+--proc kutse
 declare @FirstName nvarchar(50)
 execute spGetNameById1 4, @FirstName output
 print 'Name of the employee = ' + @FirstName
@@ -157,7 +213,7 @@ sp_help spGetNameById1
 create proc spGetNameById2
 @Id int
 as begin
-	return (select FirstName from Employees where Id = @Id)
+	return (select Name from Employees where Id = @Id)
 end
 
 -- tuleb veateade kuna kutsusime välja int-i, aga Tom on string
@@ -170,7 +226,7 @@ print 'Name of the employee = ' + @FirstName
 -- see konverteerib ASCII tähe väärtuse numbriks
 select ascii('a')
 -- kuvab A-tähe
-select char (66)
+select char (97)
 
 --prindime kogu tähestiku välja
 declare @Start int
@@ -185,7 +241,7 @@ end
 select ltrim('        Hello')
 
 -- tühikute eemaldamine veerust
-select ltrim(FirstName) as FirstName, MiddleName, LastName from Employees
+select ltrim(Name) as FirstName from Employees
 
 select * from Employees
 
@@ -195,15 +251,15 @@ select rtrim('      Hello          ')
 --keerab kooloni sees olevad andmed vastupidiseks
 -- vastavalt upper ja lower-ga saan muuta märkide suurust
 -- reverse funktsioon pöörab kõik ümber
-select REVERSE(UPPER(ltrim(FirstName))) as FirstName, MiddleName, lower(LastName),
-rtrim(ltrim(FirstName)) + ' ' + MiddleName + ' ' + LastName as FullName
+select REVERSE(UPPER(ltrim(Name))) as FirstName, lower(Gender) as Gender,
+rtrim(ltrim(Name)) + ' ' + Gender as FullInfo
 from Employees
 
 --näeb, mitu tähte on sõnal ja loeb tühikud sisse
-select FirstName, len(FirstName) as [Total Characters] from Employees
+select Name, len(Name) as [Total Characters] from Employees
 
 --- näeb, mitu tähte on sõnal ja ei loe tyhikuid sisse
-select FirstName, len(ltrim(FirstName)) as [Total Characters] from Employees
+select Name, len(ltrim(Name)) as [Total Characters] from Employees
 
 -- left, right ja substring
 --- vasakult poolt neli esimest tähte
@@ -245,13 +301,14 @@ update Employees set Email = 'Russel@bbb.com' where Id = 10
 select * from Employees
 
 --- lisame *-märgi alates teatud kohast
-select FirstName, LastName,
+select Name,
 	substring(Email, 1, 2) + REPLICATE('*', 5) + --peale teist tähemärki paneb viis tärni
 	SUBSTRING(Email, CHARINDEX('@', Email), len(Email) - charindex('@', Email)+1) as Email
 from Employees
 
 --- kolm korda näitab stringis olevat väärtust
-select replicate(FirstName, 3)
+--dubleerib nimi kolm korda
+select replicate(Name, 3)
 from Employees
 
 select replicate('asd', 3)
