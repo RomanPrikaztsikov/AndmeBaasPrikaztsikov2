@@ -154,3 +154,102 @@ SELECT * FROM Auhind;
 SELECT * FROM Kohustus;
 SELECT * FROM Töögraafik;
 
+
+-- 1) Uue politseiniku lisamine
+CREATE PROCEDURE LisaPolitseinik
+    @eesnimi VARCHAR(50),
+    @perenimi VARCHAR(50),
+    @auaste VARCHAR(20),
+    @osakondID INT
+AS
+BEGIN
+    INSERT INTO Politseinik (eesnimi, perenimi, auaste, Osakond_osakondID)
+    VALUES (@eesnimi, @perenimi, @auaste, @osakondID);
+END;
+
+
+
+-- 2) Politseiniku auastme uuendamine
+CREATE PROCEDURE UuendaAuaste
+    @politseinikID INT,
+    @uusAuaste VARCHAR(20)
+AS
+BEGIN
+    UPDATE Politseinik
+    SET auaste = @uusAuaste
+    WHERE politseinikID = @politseinikID;
+END;
+
+
+-- 3) Politseinike kuvamine osakonna järgi
+CREATE PROCEDURE KuvastaPolitseinikudOsakonnas
+    @osakondID INT
+AS
+BEGIN
+    SELECT politseinikID, eesnimi, perenimi, auaste
+    FROM Politseinik
+    WHERE Osakond_osakondID = @osakondID;
+END;
+
+
+-- 4) Uue juhtumi lisamine
+CREATE PROCEDURE LisaJuhtum
+    @kirjeldus VARCHAR(200),
+    @politseinikID INT
+AS
+BEGIN
+    INSERT INTO Asja (kirjeldus, Politseinik_politseinikID)
+    VALUES (@kirjeldus, @politseinikID);
+END;
+
+
+-- 5) Töögraafiku lisamine
+CREATE PROCEDURE LisaToograafik
+    @algus DATE,
+    @lopp DATE,
+    @politseinikID INT
+AS
+BEGIN
+    INSERT INTO Töögraafik (algus_kuupaev, lopp_kuupaev, Politseinik_politseinikID)
+    VALUES (@algus, @lopp, @politseinikID);
+END;
+
+
+SELECT 
+  Politseinik_politseinikID, 
+  COUNT(*) AS juhtumite_arv
+FROM Asja
+GROUP BY Politseinik_politseinikID;
+
+SELECT 
+  Politseinik_politseinikID, 
+  COUNT(*) AS auhindade_arv
+FROM Auhind
+GROUP BY Politseinik_politseinikID;
+
+SELECT 
+  Politseinik_politseinikID, 
+  COUNT(*) AS kohustuste_arv
+FROM Kohustus
+GROUP BY Politseinik_politseinikID;
+
+BEGIN TRANSACTION;
+UPDATE Politseinik
+SET auaste = 'kapten'
+WHERE politseinikID = 1;
+INSERT INTO Auhind (auhinna_nimi, auhinna_kuupaev, Politseinik_politseinikID)
+VALUES ('Hea töö eest', GETDATE(), 1);
+COMMIT TRANSACTION;
+
+SELECT * FROM politseinik
+
+BEGIN TRANSACTION;
+UPDATE Asja
+SET Politseinik_politseinikID = 2
+WHERE AsjaID = 3;
+UPDATE Asja
+SET kirjeldus = 'Kontrollitud juhtum'
+WHERE AsjaID = 3;
+COMMIT;
+
+SELECT * FROM Asja
