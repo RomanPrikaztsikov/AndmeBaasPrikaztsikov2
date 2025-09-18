@@ -219,33 +219,37 @@ SELECT
   privilege_type 
 FROM information_schema.table_privileges;
 
+---------------TRANSAKTSIONID
+begin transaction;
+insert into toode(toodenimetus, hind, toodekategooriaId, aktiivne)
+values ('test UUS', 100.00, 1, 1);
 
---Tabeli loomine
-create table transaktioonid (
-    id int primary key,
-    kirjeldus varchar(100),
-    summa decimal(10, 2),
-    kuupaev date
-);
+update toode
+set hind = hind * 1.45
+where toodekategooriaId = 1;
 
---Lisa andmed
-insert into transaktioonid (id, kirjeldus, summa, kuupaev) values
-(1, 'kohv', 3.50, '2025-09-15'),
-(2, 'raamat', 15.00, '2025-09-16');
+select * from toode;
+commit transaction;
 
---Transaktsioon, lisan bussipilet
-begin transaction
-insert into transaktioonid (id, kirjeldus, summa, kuupaev) values
-(3, 'bussipilet', 2.50, '2025-09-17');
-update transaktioonid
-set summa = 16.00
-where id = 2;
-commit transaction
+create procedure lisaKategooria
+    @nimetus varchar(100)
+as
+begin begin try
+	begin transaction;
 
---kui soovite muudatusi tagasi võtta
-rollback transaction
+	insert into toodeKategooria (nimetus)
+	values (@nimetus);
 
-select * from transaktioonid
+	commit transaction;
+end try
+
+begin catch
+	rollback transaction;
+	print 'Oops';
+end catch
+end;
+
+exec lisaKategooria @nimetus='uus kategooria'
 
 
 
