@@ -250,6 +250,123 @@ WHERE AsjaID = 3;
 UPDATE Asja
 SET kirjeldus = 'Kontrollitud juhtum'
 WHERE AsjaID = 3;
-COMMIT;
 
-SELECT * FROM Asja
+
+
+
+
+
+
+
+
+
+
+
+create table logi (
+id int identity(1,1) primary key,
+aeg datetime,
+toiming varchar(100),
+andmed text
+);
+
+create trigger politseiniklisamine
+on politseinik
+for insert
+as
+insert into logi (aeg, toiming, andmed)
+select
+getdate(),
+'politseinik lisamine',
+'lisati: ' + i.eesnimi + ' ' + i.perenimi + ', auaste: ' + i.auaste + ', osakond: ' + o.osakond_nimi
+from
+inserted i
+inner join osakond o on i.osakond_osakondid = o.osakondid;
+
+
+create trigger politseinikuuendamine
+on politseinik
+for update
+as
+insert into logi (aeg, toiming, andmed)
+select
+getdate(),
+'politseinik uuendamine',
+'vana: (' + d.eesnimi + ' ' + d.perenimi + ', ' + d.auaste + ')' +
+' uus: (' + i.eesnimi + ' ' + i.perenimi + ', ' + i.auaste + ')'
+from
+inserted i
+inner join deleted d on i.politseinikid = d.politseinikid;
+
+
+create trigger politseinikkustutamine
+on politseinik
+for delete
+as
+insert into logi (aeg, toiming, andmed)
+select
+getdate(),
+'politseinik kustutamine',
+'kustutati: ' + d.eesnimi + ' ' + d.perenimi + ', auaste: ' + d.auaste + ', osakond: ' + o.osakond_nimi
+from
+deleted d
+inner join osakond o on d.osakond_osakondid = o.osakondid;
+
+
+create trigger osakondlisamine
+on osakond
+for insert
+as
+insert into logi (aeg, toiming, andmed)
+select
+getdate(),
+'osakond lisamine',
+'lisati osakond: ' + i.osakond_nimi + ', aadress: ' + i.aadress
+from
+inserted i;
+
+create trigger osakonduuendamine
+on osakond
+for update
+as
+insert into logi (aeg, toiming, andmed)
+select
+getdate(),
+'osakond uuendamine',
+'vana: (' + d.osakond_nimi + ', ' + d.aadress + ')' +
+' uus: (' + i.osakond_nimi + ', ' + i.aadress + ')'
+from
+inserted i
+inner join deleted d on i.osakondid = d.osakondid;
+
+create trigger osakondkustutamine
+on osakond
+for delete
+as
+insert into logi (aeg, toiming, andmed)
+select
+getdate(),
+'osakond kustutamine',
+'kustutati osakond: ' + d.osakond_nimi + ', aadress: ' + d.aadress
+from
+deleted d;
+
+
+insert into osakond (osakond_nimi, aadress) values ('küber', 'mäepealse 3');
+
+update osakond set aadress = 'mustamäe tee 5' where osakond_nimi = 'küber';
+
+insert into politseinik (eesnimi, perenimi, auaste, osakond_osakondid) values ('mari', 'maasikas', 'inspektor', 6);
+
+update politseinik set auaste = 'vaneminspektor' where eesnimi = 'mari';
+
+delete from asja where politseinik_politseinikid = (select politseinikid from politseinik where eesnimi = 'mari');
+delete from auhind where politseinik_politseinikid = (select politseinikid from politseinik where eesnimi = 'mari');
+delete from kohustus where politseinik_politseinikid = (select politseinikid from politseinik where eesnimi = 'mari');
+delete from töögraafik where politseinik_politseinikid = (select politseinikid from politseinik where eesnimi = 'mari');
+
+delete from politseinik where eesnimi = 'mari';
+
+delete from osakond where osakond_nimi = 'küber';
+
+select * from logi;
+
