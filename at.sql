@@ -59,9 +59,14 @@ insert into opilane (opilasenimi, klassid) values
 ('Ignat', 5);
 
 --3
-grant select, insert on klass to opilaneRoman;
-grant select, insert on opetaja to opilaneRoman;
-grant select, insert on opilane to opilaneRoman;
+grant select, insert on klass to opilaneRoman
+grant select, insert on opetaja to opilaneRoman
+grant select, insert on opilane to opilaneRoman
+grant select, insert on logi to opilaneRoman
+grant delete on klass to opilaneRoman;
+
+
+delete from logi
 
 --4
 create table logi (
@@ -128,23 +133,23 @@ as
 begin
 select 
 k.klassnimi,
-k.opilastearv
+k.opilastearv,
+p.opetajanimi
 from klass k
 join opetaja p on k.opetajaid = p.opetajaid
 where p.opetajanimi = @opetajanimi
 end;
 
+
 exec kuvaKlassid 'Irina Merkulova';
 exec kuvaKlassid 'Marina Oleinik';
 
+delete from opilane where opilasenimi='test1'
+select * from opilane
 --11
 begin transaction;
-insert into opilane (opilasenimi, klassid) values ('Test1', 1);
-insert into opilane (opilasenimi, klassid) values ('Test2', 1);
-
 save transaction savepoint;
-
-insert into opilane (opilasenimi, klassid) values ('Test3', 1);
+insert into opilane (opilasenimi, klassid) values ('Test1', 1);
 
 rollback transaction savepoint;
 
