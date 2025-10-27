@@ -168,3 +168,13 @@ join klass k on o.klassid = k.klassid
 join opetaja p on k.opetajaid = p.opetajaid;
 
 select * from opilased_opetaja
+
+
+select k.klassid, k.klassnimi, k.opilastearv, p.opetajanimi, p.aine
+from klass k
+join opetaja p on k.opetajaid = p.opetajaid;
+
+select o.opilaneid, o.opilasenimi, k.klassnimi, k.opilastearv
+from opilane o
+join klass k on o.klassid = k.klassid;
+
