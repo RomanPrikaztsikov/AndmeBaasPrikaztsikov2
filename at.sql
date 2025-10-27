@@ -140,7 +140,6 @@ join opetaja p on k.opetajaid = p.opetajaid
 where p.opetajanimi = @opetajanimi
 end;
 
-
 exec kuvaKlassid 'Irina Merkulova';
 exec kuvaKlassid 'Marina Oleinik';
 
@@ -150,6 +149,7 @@ select * from opilane
 begin transaction;
 save transaction savepoint;
 insert into opilane (opilasenimi, klassid) values ('Test1', 1);
+select * from opilane
 
 rollback transaction savepoint;
 
