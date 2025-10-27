@@ -2,7 +2,7 @@ create database kool
 
 use kool
 
-
+--1
 create table opetaja (
     opetajaid int identity(1,1) primary key,
     opetajanimi varchar(30) not null,
@@ -16,15 +16,21 @@ create table klass (
     opilastearv varchar(10)
 );
 
-alter table klass
-add constraint fk_klass_opetaja
-foreign key (opetajaid) references opetaja(opetajaid);
-
 create table opilane (
     opilaneid int identity(1,1) primary key,
     opilasenimi varchar(30) not null,
     klassid int not null
 );
+select * from opetaja
+select * from klass
+select * from opilane
+
+
+
+--2
+alter table klass
+add constraint fk_klass_opetaja
+foreign key (opetajaid) references opetaja(opetajaid);
 
 alter table opilane
 add constraint fk_opilane_klass
@@ -52,10 +58,12 @@ insert into opilane (opilasenimi, klassid) values
 ('Oleg', 4),
 ('Ignat', 5);
 
+--3
 grant select, insert on klass to opilaneRoman;
 grant select, insert on opetaja to opilaneRoman;
 grant select, insert on opilane to opilaneRoman;
 
+--4
 create table logi (
 id int identity(1,1) primary key,
 kasutaja varchar(50) not null,
@@ -64,6 +72,7 @@ tegevus varchar(50) not null,
 andmed varchar(100) not null
 );
 
+--5
 create trigger kustutamineKlass
 on klass
 after delete
@@ -74,23 +83,22 @@ select
 system_user,
 getdate(),
 'kustutamine',
-concat('klassid: ', deleted.klassid, 
-        ', klassnimi: ', deleted.klassnimi, 
-        ', opetajaid: ', deleted.opetajaid, 
-        ', opilastearv: ', deleted.opilastearv)
-from deleted;
+concat('klassnimi: ', d.klassnimi, 
+        ', opetaja: ', p.opetajanimi,
+        ', opilastearv: ', d.opilastearv)
+from deleted d
+join opetaja p on d.opetajaid = p.opetajaid;
 end;
 
 
 insert into klass (klassnimi, opetajaid, opilastearv) 
-values ('test', 1, '10');
+values ('test222', 1, '10');
 select * from klass;
 
-delete from klass where klassnimi = 'test';
+delete from klass where klassnimi = 'NEWINSERT';
 select * from logi;
 
-
-
+--6
 create trigger lisamineKlass
 on klass
 after insert
@@ -101,19 +109,19 @@ select
 system_user,
 getdate(),
 'lisamine',
-concat('klassid: ', inserted.klassid, 
-        ', klassnimi: ', inserted.klassnimi, 
-        ', opetajaid: ', inserted.opetajaid, 
-        ', opilastearv: ', inserted.opilastearv)
-from inserted;
+concat('klassnimi: ', i.klassnimi, 
+        ', opetaja: ', p.opetajanimi,
+        ', opilastearv: ', i.opilastearv)
+from inserted i
+join opetaja p on i.opetajaid = p.opetajaid;
 end;
 
 
 insert into klass (klassnimi, opetajaid, opilastearv) 
-values ('testinsert', 1, '12');
+values ('NEWINSERT', 1, '11');
 select * from logi;
 
-
+--10
 create procedure kuvaKlassid
 @opetajanimi varchar(30)
 as
@@ -129,7 +137,7 @@ end;
 exec kuvaKlassid 'Irina Merkulova';
 exec kuvaKlassid 'Marina Oleinik';
 
-
+--11
 begin transaction;
 insert into opilane (opilasenimi, klassid) values ('Test1', 1);
 insert into opilane (opilasenimi, klassid) values ('Test2', 1);
@@ -144,12 +152,12 @@ commit transaction;
 
 select * from opilane
 
-
+--13
 create view opilased_opetaja as
 select 
-    o.opilasenimi,
-    k.klassnimi,
-    p.opetajanimi
+o.opilasenimi,
+k.klassnimi,
+p.opetajanimi
 from opilane o
 join klass k on o.klassid = k.klassid
 join opetaja p on k.opetajaid = p.opetajaid;
